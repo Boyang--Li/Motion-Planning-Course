@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package>
+  <name>occupancy_grid_utils</name>
+  <version>0.0.10</version>
+  <description>The catkinized Occupancy Grid Utils package</description>
+  <maintainer email="jservos@clearpathrobotics.com">jservos</maintainer>
+
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>laser_geometry</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf2_bullet</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>cv_bridge</build_depend>
+
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>laser_geometry</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf2_bullet</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>eigen</run_depend>
+  <run_depend>cv_bridge</run_depend>
+
+  <export>
+  </export>
+</package>

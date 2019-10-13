@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosplan_turtlebot3_demo</name>
+  <version>1.0.0</version>
+  <description>
+    Simple exporation mission ROSPlan demo in Gazebo with turtlebot3.
+  </description>
+
+  <maintainer email="oscar.lima@dfki.de">Oscar Lima</maintainer>
+
+  <license>BSD</license>
+  <url type="website">http://github.com/KCL-Planning/rosplan_demos</url>
+  <author email="oscar.lima@dfki.de">Oscar Lima</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
