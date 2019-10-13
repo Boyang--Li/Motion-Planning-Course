@@ -1,6 +1,6 @@
 % Used for Motion Planning for Mobile Robots
 % Thanks to HKUST ELEC 5660 
-close all; clear all; clc;
+close all; clear; clc;
 
 set(gcf, 'Renderer', 'painters');
 set(gcf, 'Position', [500, 50, 700, 700]);
