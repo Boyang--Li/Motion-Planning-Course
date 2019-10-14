@@ -1,5 +1,5 @@
-Use the script "math.m" as the main entry point.
-使用math.m作为主函数入口
+Use the script "main.m" as the main entry point.
+使用main.m作为主函数入口
 
 A_star: useful functions for A*
            distance.m: This function calculates the distance between any two cartesian coordinates.
