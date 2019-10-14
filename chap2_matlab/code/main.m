@@ -17,5 +17,9 @@ map = obstacle_map(xStart, yStart, xTarget, yTarget, MAX_X, MAX_Y);
 % Waypoint Generator Using the A* 
 path = A_star_search(map, MAX_X,MAX_Y);
 
+if isempty(path)
+    disp("No path can be found !!!")
+end
+
 % visualize the 2D grid map
 visualize_map(map, path);

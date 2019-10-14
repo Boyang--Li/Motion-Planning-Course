@@ -76,27 +76,27 @@ NoPath = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while(~isempty(OPEN)) %you have to dicide the Conditions for while loop exit
-% if open queue is empty?
+while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget)) 
+    %you have to dicide the Conditions for while loop exit
   
     % Remove the node n with lowert f(n)    
-    pump_index = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
-      
-    % Mark n as expanded 
-    % put pump_index to close
+    fmin_index = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
     
-    % If n is the goal state, reture TRUE; break;
-    if (OPEN(pump_index,2) == xTarget && OPEN(pump_index,3) == yTarget)
-        break
+    % No path can be found
+    if fmin_index == -1
+        NoPath = 0;
     end
     
+    % Mark n as expanded 
+    % put pump_index to close
+      
     % for unexpanded neighbors m of n
     % exp_array=expand_array(node_x,node_y,gn,xTarget,yTarget,CLOSED,MAX_X,MAX_Y)
-    exp_n = expand_array(OPEN(pump_index,2),OPEN(pump_index,3),...
-        OPEN(pump_index,7),xTarget,yTarget,CLOSED,MAX_X,MAX_Y);
+%     exp_n = expand_array(OPEN(fmin_index,2),OPEN(fmin_index,3),...
+%         OPEN(fmin_index,7),xTarget,yTarget,CLOSED,MAX_X,MAX_Y);
     % if g(m) = infinite; g(m)=g(n)+Cnm; Push m into queue
     % if g(m) > g(n) + Cnm; g(m)=  g(n) + Cnm
-    if ()
+%     if ()
     
     
 end %End of While Loop
@@ -109,6 +109,5 @@ end %End of While Loop
 %How to get the optimal path after A_star search?
 %please finish it
 % 
-
 path = [];
 end
