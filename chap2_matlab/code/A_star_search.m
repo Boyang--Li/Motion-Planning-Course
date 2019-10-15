@@ -60,8 +60,8 @@ end
 CLOSED_COUNT = size(CLOSED,1);
 
 %set the starting node as the first node
-xNode = xval; % xval = xStart
-yNode = yval;
+xNode = xStart; % xval = xStart
+yNode = yStart;
 OPEN_COUNT = 1;
 goal_distance = distance(xNode,yNode,xTarget,yTarget);
 path_cost = 0;
@@ -76,7 +76,7 @@ NoPath = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget))
+while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget)) % no path or get target
     %you have to dicide the Conditions for while loop exit
     
     % for unexpanded neighbors m of n
@@ -86,13 +86,12 @@ while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget))
         flag = 0;
         for j = 1:OPEN_COUNT
             if (exp_n(i,1) == OPEN(j,2) && exp_n(i,2) == OPEN(j,3))
-                OPEN(j,8) = min(OPEN(j,8),exp_n(i,5));
-                if OPEN(j,8) == exp_n(i,5)
+                if (exp_n(i,4)<OPEN(j,7))
                     % update parents
                     OPEN(j,4)=xNode;
                     OPEN(j,5)=yNode;
-                    OPEN(j,6)=exp_n(i,3);
                     OPEN(j,7)=exp_n(i,4);
+                    OPEN(j,8)=OPEN(j,7) + OPEN(j,6);
                 end
                 flag = 1; %do not need to insert to open list
             end
@@ -118,7 +117,7 @@ while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget))
     
     xNode = OPEN(fmin_index,2);
     yNode = OPEN(fmin_index,3);
-    path_cost=OPEN(fmin_index,6);
+    path_cost=OPEN(fmin_index,7);
     
     % Mark n as expanded
     % put pump_index to close
@@ -139,9 +138,16 @@ end %End of While Loop
 %How to get the optimal path after A_star search?
 %please finish it
 %
-if NoPath == 1 % exist path
-    for i = 0:
-        path = [];
+path = [];
+if NoPath == 1 % no exist path
+    xval = xTarget;
+    yval = yTarget;
+    while ~(xval==xStart && yval==yStart)
+        path = [path; xval-0.5, yval-0.5];
+        current_index = node_index(OPEN, xval, yval);
+        xval = OPEN(current_index,4);
+        yval = OPEN(current_index,5);
     end
+    path=[path; xStart-0.5, yStart-0.5];
 end
 end
