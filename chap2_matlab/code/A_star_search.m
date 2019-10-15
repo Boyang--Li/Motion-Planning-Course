@@ -76,28 +76,58 @@ NoPath = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget)) 
+while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget))
     %you have to dicide the Conditions for while loop exit
-  
-    % Remove the node n with lowert f(n)    
+    
+    % for unexpanded neighbors m of n
+    exp_n = expand_array(xNode,yNode,path_cost,xTarget,yTarget,CLOSED,MAX_X,MAX_Y);
+    
+    for i = 1:size(exp_n,1)
+        flag = 0;
+        for j = 1:OPEN_COUNT
+            if (exp_n(i,1) == OPEN(j,2) && exp_n(i,2) == OPEN(j,3))
+                OPEN(j,8) = min(OPEN(j,8),exp_n(i,5));
+                if OPEN(j,8) == exp_n(i,5)
+                    % update parents
+                    OPEN(j,4)=xNode;
+                    OPEN(j,5)=yNode;
+                    OPEN(j,6)=exp_n(i,3);
+                    OPEN(j,7)=exp_n(i,4);
+                end
+                flag = 1; %do not need to insert to open list
+            end
+        end
+        if flag == 0 %put new exp_n back to OPTN
+            OPEN_COUNT = OPEN_COUNT + 1;
+            %--------------------------------------------------------------------------
+            %IS ON LIST 1/0 |X val |Y val |Parent X val |Parent Y val |h(n) |g(n)|f(n)|
+            %-------------------------------------------------------------------------
+            OPEN(OPEN_COUNT,:) = insert_open(exp_n(i,1),exp_n(i,2),...
+                xNode,yNode,exp_n(i,3),exp_n(i,4),exp_n(i,5));
+        end
+    end
+    
+    % Remove the node n with lowert f(n)
     fmin_index = min_fn(OPEN,OPEN_COUNT,xTarget,yTarget);
     
     % No path can be found
     if fmin_index == -1
         NoPath = 0;
+        break;
     end
     
-    % Mark n as expanded 
-    % put pump_index to close
-      
-    % for unexpanded neighbors m of n
-    % exp_array=expand_array(node_x,node_y,gn,xTarget,yTarget,CLOSED,MAX_X,MAX_Y)
-%     exp_n = expand_array(OPEN(fmin_index,2),OPEN(fmin_index,3),...
-%         OPEN(fmin_index,7),xTarget,yTarget,CLOSED,MAX_X,MAX_Y);
-    % if g(m) = infinite; g(m)=g(n)+Cnm; Push m into queue
-    % if g(m) > g(n) + Cnm; g(m)=  g(n) + Cnm
-%     if ()
+    xNode = OPEN(fmin_index,2);
+    yNode = OPEN(fmin_index,3);
+    path_cost=OPEN(fmin_index,6);
     
+    % Mark n as expanded
+    % put pump_index to close
+    OPEN (fmin_index, 1) = 0;
+    
+    % Put the visited open to close
+    CLOSED_COUNT = CLOSED_COUNT + 1;
+    CLOSED(CLOSED_COUNT,1) = xNode;
+    CLOSED(CLOSED_COUNT,2) = yNode;
     
 end %End of While Loop
 
@@ -108,6 +138,10 @@ end %End of While Loop
 %
 %How to get the optimal path after A_star search?
 %please finish it
-% 
-path = [];
+%
+if NoPath == 1 % exist path
+    for i = 0:
+        path = [];
+    end
+end
 end
