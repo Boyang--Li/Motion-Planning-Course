@@ -1,0 +1,548 @@
+boyang@boyang-thinkpad-p52s:~/code/Motion-Planning-Course/chap2_ros/src/grid_path_searcher$ git diff
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 46ff451..a1bc37e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -30,7 +30,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall") # -Wextra -Werror
+ 
+ add_executable( demo_node 
+     src/demo_node.cpp
+-    src/graph_searcher.cpp)
++    src/Astar_searcher.cpp
++    src/read_only/JPS_utils.cpp
++    src/read_only/JPS_searcher.cpp
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 46ff451..a1bc37e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -30,7 +30,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall"
+) # -Wextra -Werror
+ 
+ add_executable( demo_node 
+     src/demo_node.cpp
+-    src/graph_searcher.cpp)
++    src/Astar_searcher.cpp
++    src/read_only/JPS_utils.cpp
++    src/read_only/JPS_searcher.cpp
++    )
+ 
+ target_link_libraries(demo_node 
+     ${catkin_LIBRARIES}
+diff --git a/include/backward.hpp b/include/backward.hpp
+old mode 100755
+new mode 100644
+diff --git a/include/graph_searcher.h b/include/graph_searcher.h
+deleted file mode 100644
+index a097728..0000000
+--- a/include/graph_searcher.h
++++ /dev/null
+@@ -1,136 +0,0 @@
+-#include <iostream>
+-#include <ros/ros.h>
+-#include <ros/console.h>
+-#include <Eigen/Eigen>
+-#include "backward.hpp"
+-
+-#define inf 1>>20
+-struct GridNode;
+-typedef GridNode* GridNodePtr;
+-
+-///Search and prune neighbors for JPS 3D
+-struct JPS3DNeib {
+-       // for each (dx,dy,dz) these contain:
+-       //    ns: neighbors that are always added
+-       //    f1: forced neighbors to check
+-       //    f2: neighbors to add if f1 is forced
+-       int ns[27][3][26];
+-       int f1[27][3][12];
+-       int f2[27][3][12];
+-       // nsz contains the number of neighbors for the four different types of moves:
+-       // no move (norm 0):        26 neighbors always added
+-       //                          0 forced neighbors to check (never happens)
+-       //                          0 neighbors to add if forced (never happens)
+-       // straight (norm 1):       1 neighbor always added
+-       //                          8 forced neighbors to check
+-       //                          8 neighbors to add if forced
+-       // diagonal (norm sqrt(2)): 3 neighbors always added
+-       //                          8 forced neighbors to check
+-       //                          12 neighbors to add if forced
+-       // diagonal (norm sqrt(3)): 7 neighbors always added
+-       //                          6 forced neighbors to check
+-       //                          12 neighbors to add if forced
+-       static constexpr int nsz[4][2] = {{26, 0}, {1, 8}, {3, 12}, {7, 12}};
+-       JPS3DNeib();
+-       private:
+-       void Neib(int dx, int dy, int dz, int norm1, int dev, int& tx, int& ty, int& tz);
+-       void FNeib( int dx, int dy, int dz, int norm1, int dev,
+-           int& fx, int& fy, int& fz,
+-           int& nx, int& ny, int& nz);
+-};
+-
+-struct GridNode
+-{     
+-    int id;        // 1--> open set, -1 --> closed set
+-    Eigen::Vector3d coord; 
+-    Eigen::Vector3i dir;   // direction of expanding
+-    Eigen::Vector3i index;
+-       
+-    bool is_path;
+-    double gScore, fScore;
+-    GridNodePtr cameFrom;
+-    std::multimap<double, GridNodePtr>::iterator nodeMapIt;
+-
+-    GridNode(Eigen::Vector3i _index, Eigen::Vector3d _coord){  
+-               id = 0;
+-               is_path = false;
+-               index = _index;
+-               coord = _coord;
+-               dir   = Eigen::Vector3i::Zero();
+-
+-               gScore = inf;
+-               fScore = inf;
+-               cameFrom = NULL;
+-    }
+-
+-    GridNode(){};
+-    ~GridNode(){};
+-};
+-
+-class gridPathFinder
+-{
+-       private:
+-               double getDiagHeu(GridNodePtr node1, GridNodePtr node2);
+-               double getManhHeu(GridNodePtr node1, GridNodePtr node2);
+-               double getEuclHeu(GridNodePtr node1, GridNodePtr node2);
+-               double getHeu(GridNodePtr node1, GridNodePtr node2);
+-
+-               std::vector<GridNodePtr> retrievePath(GridNodePtr current);
+-
+-               double resolution, inv_resolution;
+-               double tie_breaker = 1.0 + 1.0 / 10000;
+-
+-               std::vector<GridNodePtr> expandedNodes;
+-               std::vector<GridNodePtr> gridPath;
+-               std::vector<GridNodePtr> endPtrList;
+-               
+-               int GLX_SIZE, GLY_SIZE, GLZ_SIZE;
+-               int GLXYZ_SIZE, GLYZ_SIZE;
+-               double gl_xl, gl_yl, gl_zl;
+-               double gl_xu, gl_yu, gl_zu;
+-       
+-               Eigen::Vector3i goalIdx;
+-
+-               uint8_t * data;
+-
+-               GridNodePtr *** GridNodeMap;
+-               std::multimap<double, GridNodePtr> openSet;
+-               JPS3DNeib * jn3d;
+-
+-               bool jump(const Eigen::Vector3i & curIdx, const Eigen::Vector3i & expDir, Eigen::Vector3i & neiIdx);
+-               
+-               inline void getJpsSucc(GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets, int num_iter);
+-               inline void getSucc   (GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets);
+-               inline bool hasForced(const Eigen::Vector3i & idx, const Eigen::Vector3i & dir);
+-
+-               inline bool isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const;
+-               inline bool isOccupied(const Eigen::Vector3i & index) const;
+-               inline bool isFree(const int & idx_x, const int & idx_y, const int & idx_z) const;
+-               inline bool isFree(const Eigen::Vector3i & index) const;
+-
+-               inline Eigen::Vector3d gridIndex2coord(const Eigen::Vector3i & index) const;
+-               inline Eigen::Vector3i coord2gridIndex(const Eigen::Vector3d & pt) const;
+-
+-       public:
+-
+-               std::vector<Eigen::Vector3d> debugNodes;
+-               gridPathFinder( ){                              
+-               jn3d = new JPS3DNeib();
+-               };
+-
+-               ~gridPathFinder(){
+-                       delete jn3d;
+-               };
+-
+-               void initGridMap(double _resolution, Eigen::Vector3d global_xyz_l, Eigen::Vector3d global_xyz_u, int max_x_id, int max_y_id, int max_z_id);
+-               void setObs(const double coord_x, const double coord_y, const double coord_z);
+-
+-               void graphSearch(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt, bool use_jps = false);
+-               void resetGrid(GridNodePtr ptr);
+-               void resetUsedGrids();
+-
+-               Eigen::Vector3d coordRounding(const Eigen::Vector3d & coord) const;
+-               std::vector<Eigen::Vector3d> getPath();
+-               std::vector<Eigen::Vector3d> getVisitedNodes();
+-               std::vector<Eigen::Vector3d> getCloseNodes();
+-};
+\ No newline at end of file
+diff --git a/launch/demo.launch b/launch/demo.launch
+index 56119ea..51f6859 100644
+--- a/launch/demo.launch
++++ b/launch/demo.launch
+@@ -1,8 +1,8 @@
+ <launch>
+ 
+-<arg name="map_size_x" default="20.0"/>
+-<arg name="map_size_y" default="20.0"/>
+-<arg name="map_size_z" default=" 3.0"/>
++<arg name="map_size_x" default="10.0"/>
++<arg name="map_size_y" default="10.0"/>
++<arg name="map_size_z" default=" 2.0"/>
+ 
+ <arg name="start_x" default=" 0.0"/>
+ <arg name="start_y" default=" 0.0"/>
+diff --git a/launch/rviz_config/demo.rviz b/launch/rviz_config/demo.rviz
+:
+st;
+-               std::vector<Eigen::Vector3d> getPath();
+-               std::vector<Eigen::Vector3d> getVisitedNodes();
+-               std::vector<Eigen::Vector3d> getCloseNodes();
+-};
+\ No newline at end of file
+diff --git a/launch/demo.launch b/launch/demo.launch
+index 56119ea..51f6859 100644
+--- a/launch/demo.launch
++++ b/launch/demo.launch
+@@ -1,8 +1,8 @@
+ <launch>
+ 
+-<arg name="map_size_x" default="20.0"/>
+-<arg name="map_size_y" default="20.0"/>
+-<arg name="map_size_z" default=" 3.0"/>
++<arg name="map_size_x" default="10.0"/>
++<arg name="map_size_y" default="10.0"/>
++<arg name="map_size_z" default=" 2.0"/>
+ 
+ <arg name="start_x" default=" 0.0"/>
+ <arg name="start_y" default=" 0.0"/>
+diff --git a/launch/rviz_config/demo.rviz b/launch/rviz_config/demo.rviz
+index 3b20e00..f37c8a5 100644
+:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+st;
+-               std::vector<Eigen::Vector3d> getPath();
+-               std::vector<Eigen::Vector3d> getVisitedNodes();
+-               std::vector<Eigen::Vector3d> getCloseNodes();
+-};
+\ No newline at end of file
+diff --git a/launch/demo.launch b/launch/demo.launch
+index 56119ea..51f6859 100644
+--- a/launch/demo.launch
++++ b/launch/demo.launch
+@@ -1,8 +1,8 @@
+ <launch>
+ 
+-<arg name="map_size_x" default="20.0"/>
+-<arg name="map_size_y" default="20.0"/>
+-<arg name="map_size_z" default=" 3.0"/>
++<arg name="map_size_x" default="10.0"/>
++<arg name="map_size_y" default="10.0"/>
++<arg name="map_size_z" default=" 2.0"/>
+ 
+ <arg name="start_x" default=" 0.0"/>
+ <arg name="start_y" default=" 0.0"/>
+diff --git a/launch/rviz_config/demo.rviz b/launch/rviz_config/demo.rviz
+index 3b20e00..f37c8a5 100644
+--- a/launch/rviz_config/demo.rviz
++++ b/launch/rviz_config/demo.rviz
+@@ -4,16 +4,11 @@ Panels:
+     Name: Displays
+     Property Tree Widget:
+       Expanded:
+-        - /Global Options1
+-        - /Status1
+         - /AllMap1/Autocompute Value Bounds1
+-        - /ClosedNodes1
+-        - /ClosedNodes1/Namespaces1
+-        - /gridPath1
++        - /visitedNodes1/Namespaces1
+         - /gridPath1/Namespaces1
+-        - /Marker1
+       Splitter Ratio: 0.609022558
+-    Tree Height: 517
++    Tree Height: 566
+   - Class: rviz/Selection
+     Name: Selection
+   - Class: rviz/Tool Properties
+@@ -50,7 +45,7 @@ Visualization Manager:
+         Y: 0
+         Z: 0
+       Plane: XY
+-      Plane Cell Count: 200
++      Plane Cell Count: 50
+       Reference Frame: <Fixed Frame>
+       Value: true
+     - Class: rviz/Axes
+@@ -63,9 +58,9 @@ Visualization Manager:
+     - Alpha: 1
+       Autocompute Intensity Bounds: true
+       Autocompute Value Bounds:
+-        Max Value: 3.9000001
+-        Min Value: 0
+-        Value: false
++        Max Value: 1.89999998
++        Min Value: 0.100000001
++        Value: true
+       Axis: Z
+       Channel Name: intensity
+       Class: rviz/PointCloud2
+@@ -92,24 +87,8 @@ Visualization Manager:
+       Value: true
+     - Class: rviz/Marker
+       Enabled: false
+-      Marker Topic: /demo_node/closed_nodes_vis
+-      Name: ClosedNodes
+-      Namespaces:
+-        {}
+-      Queue Size: 100
+-      Value: false
+-    - Class: rviz/Marker
+-      Enabled: false
+-      Marker Topic: /fast_flight_node/close_nodes_sequence_vis
+-      Name: closeNodesSequence
+-      Namespaces:
+-        {}
+-      Queue Size: 100
+-      Value: false
+-    - Class: rviz/Marker
+-      Enabled: false
+-      Marker Topic: /fast_flight_node/open_nodes_vis
+-      Name: OpenNodes
++      Marker Topic: /demo_node/visited_nodes_vis
++      Name: visitedNodes
+       Namespaces:
+         {}
+       Queue Size: 100
+@@ -119,18 +98,9 @@ Visualization Manager:
+       Marker Topic: /demo_node/grid_path_vis
+       Name: gridPath
+       Namespaces:
+-        demo_node/astar_path: false
+         demo_node/jps_path: true
+       Queue Size: 100
+       Value: true
+-    - Class: rviz/Marker
+-      Enabled: true
+-      Marker Topic: /demo_node/debug_nodes_vis
+-      Name: Marker
+-      Namespaces:
+-        demo_node/debug_info: true
+-      Queue Size: 100
+-      Value: true
+   Enabled: true
+   Global Options:
+     Background Color: 255; 255; 127
+@@ -149,16 +119,16 @@ Visualization Manager:
+   Views:
+     Current:
+       Class: rviz/Orbit
+-      Distance: 6.79373455
++      Distance: 9.74612236
+       Enable Stereo Rendering:
+         Stereo Eye Separation: 0.0599999987
+         Stereo Focal Distance: 1
+         Swap Stereo Eyes: false
+         Value: false
+       Focal Point:
+-        X: 2.45372701
+-        Y: 2.52708316
+-        Z: 0.181677282
++        X: 2.19087362
++        Y: 0.484706104
++        Z: 0.618929148
+       Focal Shape Fixed Size: true
+       Focal Shape Size: 0.0500000007
+       Invert Z Axis: false
+@@ -167,7 +137,7 @@ Visualization Manager:
+       Pitch: 1.56979632
+       Target Frame: <Fixed Frame>
+       Value: Orbit (rviz)
+-      Yaw: 0.126217589
++      Yaw: 3.77436399
+     Saved:
+       - Class: rviz/Orbit
+         Distance: 79.2448425
+@@ -237,10 +207,10 @@ Visualization Manager:
+ Window Geometry:
+   Displays:
+     collapsed: false
+-  Height: 920
++  Height: 1028
+   Hide Left Dock: false
+   Hide Right Dock: false
+-  QMainWindow State: 000000ff00000000fd0000000400000000000001a20000036bfc020000000bfb000000100044006900730070006c00610079007301000000130000023f000000c600fffffffb0000000a005600690065007700730100000258000001260000009e00fffffffb0000001200530065006c0065006300740069006f006e00000000000000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000e3000001c60000005c00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065020000037e000000e30000016a00000089fb0000000a0049006d0061006700650200000593000001f50000016a000000ed000000010000010f000002c4fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000ddfc0100000002fb0000000c00430061006d006500720061020000012e00000138000002d9000001a9fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005730000003efc0100000002fb0000000800540069006d00650000000000000005730000024400fffffffb0000000800540069006d00650100000000000004500000000000000000000004610000036b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
++  QMainWindow State: 000000ff00000000fd0000000400000000000001a2000003befc020000000bfb000000100044006900730070006c006100790073010000002800000277000000d700fffffffb0000000a0056006900650077007301000002a500000141000000ad00fffffffb0000001200530065006c0065006300740069006f006e00000000000000009b0000006100fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000e3000001c60000006100fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065020000037e000000e30000016a00000089fb0000000a0049006d0061006700650200000593000001f50000016a000000ed000000010000010f000002c4fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000ddfc0100000002fb0000000c00430061006d006500720061020000012e00000138000002d9000001a9fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005730000003efc0100000002fb0000000800540069006d00650000000000000005730000030000fffffffb0000000800540069006d0065010000000000000450000000000000000000000597000003be00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+   Selection:
+     collapsed: false
+   Time:
+@@ -249,6 +219,6 @@ Window Geometry:
+     collapsed: false
+   Views:
+     collapsed: false
+-  Width: 1545
+-  X: 905
+-  Y: 325
++  Width: 1855
++  X: 142
++  Y: 69
+diff --git a/src/demo_node.cpp b/src/demo_node.cpp
+index ce79e40..0a66f8b 100644
+--- a/src/demo_node.cpp
++++ b/src/demo_node.cpp
+@@ -14,7 +14,8 @@
+ #include <visualization_msgs/MarkerArray.h>
+ #include <visualization_msgs/Marker.h>
+ 
+-#include "graph_searcher.h"
++#include "Astar_searcher.h"
++#include "JPS_searcher.h"
+ #include "backward.hpp"
+ 
+ using namespace std;
+@@ -37,18 +38,16 @@ int _max_x_id, _max_y_id, _max_z_id;
+ 
+ // ros related
+ ros::Subscriber _map_sub, _pts_sub;
+-ros::Publisher  _grid_path_vis_pub, _debug_nodes_vis_pub, _closed_nodes_vis_pub, _open_nodes_vis_pub, _close_nodes_sequence_vis_pub, _grid_map_vis_pub;
++ros::Publisher  _grid_path_vis_pub, _visited_nodes_vis_pub, _grid_map_vis_pub;
+ 
+-gridPathFinder * _path_finder = new gridPathFinder();
++AstarPathFinder * _astar_path_finder     = new AstarPathFinder();
++JPSPathFinder   * _jps_path_finder       = new JPSPathFinder();
+ 
+ void rcvWaypointsCallback(const nav_msgs::Path & wp);
+ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map);
+ 
+-void visDebugNodes( vector<Vector3d> nodes );
+ void visGridPath( vector<Vector3d> nodes, bool is_use_jps );
+-void visCloseNode( vector<Vector3d> nodes );
+-void visOpenNode( vector<Vector3d> nodes );
+-void visCloseNodeSequence( vector<Vector3d> nodes );
++void visVisitedNode( vector<Vector3d> nodes );
+ void pathFinding(const Vector3d start_pt, const Vector3d target_pt);
+ 
+ void rcvWaypointsCallback(const nav_msgs::Path & wp)
+@@ -59,9 +58,9 @@ void rcvWaypointsCallback(const nav_msgs::Path & wp)
+     Vector3d target_pt;
+     target_pt << wp.poses[0].pose.position.x,
+                  wp.poses[0].pose.position.y,
+-                 1.0;//wp.poses[0].pose.position.z;
++                 wp.poses[0].pose.position.z;
+ 
+-    ROS_INFO("[jps_node] receive the way-points");
++    ROS_INFO("[node] receive the planning target");
+     pathFinding(_start_pt, target_pt); 
+ }
+ 
+@@ -77,33 +76,21 @@ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
+     
+     if( (int)cloud.points.size() == 0 ) return;
+ 
+-    pcl::PointXYZ pt, pt_inf;
+-    int inf_step   = round(_cloud_margin * _inv_resolution);
+-    int inf_step_z = max(1, inf_step / 2);
++    pcl::PointXYZ pt;
+     for (int idx = 0; idx < (int)cloud.points.size(); idx++)
+     {    
+         pt = cloud.points[idx];        
+-        for(int x = -inf_step ; x <= inf_step; x ++ )
+-        {
+-            for(int y = -inf_step ; y <= inf_step; y ++ )
+-            {
+-                for(int z = -inf_step_z; z <= inf_step_z; z ++ )
+-                {
+-                    double inf_x = pt.x + x * _resolution;
+-                    double inf_y = pt.y + y * _resolution;
+-                    double inf_z = pt.z + z * _resolution;
+-                    _path_finder->setObs(inf_x, inf_y, inf_z);
+-
+-                    Vector3d cor_inf = _path_finder->coordRounding(Vector3d(inf_x, inf_y, inf_z));
+-
+-                    pt_inf.x = cor_inf(0);
+-                    pt_inf.y = cor_inf(1);
+-                    pt_inf.z = cor_inf(2);
+-                    cloud_vis.points.push_back(pt_inf);
+-
+-                }
+-            }
+-        }
++
++        // set obstalces into grid map for path planning
++        _astar_path_finder->setObs(pt.x, pt.y, pt.z);
++        _jps_path_finder->setObs(pt.x, pt.y, pt.z);
++
++        // for visualize only
++        Vector3d cor_round = _astar_path_finder->coordRounding(Vector3d(pt.x, pt.y, pt.z));
++        pt.x = cor_round(0);
++        pt.y = cor_round(1);
++        pt.z = cor_round(2);
++        cloud_vis.points.push_back(pt);
+     }
+ 
+     cloud_vis.width    = cloud_vis.points.size();
+@@ -120,20 +107,41 @@ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
+ 
+ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
+ {
+-    _path_finder->graphSearch(start_pt, target_pt, true);
+-    auto grid_path   = _path_finder->getPath();
+-    visGridPath (grid_path, true);
+-    visDebugNodes(_path_finder->debugNodes);
++    //Call A* to search for a path
++    _astar_path_finder->AstarGraphSearch(start_pt, target_pt);
+ 
+-    _path_finder->resetUsedGrids();
++    //Retrieve the path
++    auto grid_path     = _astar_path_finder->getPath();
++    auto visited_nodes = _astar_path_finder->getVisitedNodes();
+ 
+-    _path_finder->graphSearch(start_pt, target_pt, false);
+-    grid_path   = _path_finder->getPath();
++    //Visualize the result
+     visGridPath (grid_path, false);
+-    auto close_nodes = _path_finder->getCloseNodes();
+-    visCloseNode(close_nodes);
+-    
+-    _path_finder->resetUsedGrids();
