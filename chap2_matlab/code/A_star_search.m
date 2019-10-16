@@ -76,8 +76,8 @@ NoPath = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % START ALGORITHM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget)) % no path or get target
-    %you have to dicide the Conditions for while loop exit
+while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget))
+    % no path or arrive target
     
     % for unexpanded neighbors m of n
     exp_n = expand_array(xNode,yNode,path_cost,xTarget,yTarget,CLOSED,MAX_X,MAX_Y);
@@ -117,7 +117,7 @@ while(NoPath == 1 && (xNode ~= xTarget || yNode ~= yTarget)) % no path or get ta
     
     xNode = OPEN(fmin_index,2);
     yNode = OPEN(fmin_index,3);
-    path_cost=OPEN(fmin_index,7);
+    path_cost = OPEN(fmin_index,7);
     
     % Mark n as expanded
     % put pump_index to close
@@ -134,12 +134,8 @@ end %End of While Loop
 %last node(if it is the target node) and then identifying its parent node
 %until it reaches the start node. This is the optimal path
 
-%
-%How to get the optimal path after A_star search?
-%please finish it
-%
 path = [];
-if NoPath == 1 % no exist path
+if NoPath == 1 % path exist
     xval = xTarget;
     yval = yTarget;
     while ~(xval==xStart && yval==yStart)
@@ -148,6 +144,6 @@ if NoPath == 1 % no exist path
         xval = OPEN(current_index,4);
         yval = OPEN(current_index,5);
     end
-    path=[path; xStart-0.5, yStart-0.5];
+    path=[path; xStart-0.5, yStart-0.5]; % compensent plot number
 end
 end
