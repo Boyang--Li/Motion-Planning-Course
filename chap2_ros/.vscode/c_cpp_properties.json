@@ -12,6 +12,7 @@
                 "/home/boyang/code/catkin_avoidance/src/avoidance/avoidance/include/**",
                 "/home/boyang/code/Connect-R/src/crbot_plc/include/**",
                 "/home/boyang/code/catkin_avoidance/src/avoidance/global_planner/include/**",
+                "/home/boyang/code/Motion-Planning-Course/chap2_ros/src/grid_path_searcher/include/**",
                 "/home/boyang/code/catkin_avoidance/src/avoidance/local_planner/include/**",
                 "/home/boyang/code/catkin_avoidance/src/avoidance/safe_landing_planner/include/**",
                 "/usr/include/**"
