@@ -14,6 +14,6 @@ end
 
 function feasible=feasiblePoint(point,map)
 feasible=true;
-if ~(point(1)>=1 &&  point(1)<=size(map,1) && point(2)>=1 && point(2)<=size(map,2) && map(point(2),point(1))==255)
+if ~(point(1)>=1 &&  point(1)<=size(map,2) && point(2)>=1 && point(2)<=size(map,1) && map(point(2),point(1))==255)
     feasible=false;
 end
