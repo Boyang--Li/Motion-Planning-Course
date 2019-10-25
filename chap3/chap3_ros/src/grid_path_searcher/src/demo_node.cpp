@@ -128,6 +128,7 @@ public:
   {
     // We know we're working with a RealVectorStateSpace in this
     // example, so we downcast state into the specific type.
+    //  const auto *se3state = state->as<ob::SE3StateSpace::StateType>();
     const ob::RealVectorStateSpace::StateType* state3D = state->as<ob::RealVectorStateSpace::StateType>();
     /**
     *
@@ -136,13 +137,18 @@ public:
     *
     *
     */
-    double x, y, z;
-    cout << "values= " << state3D->values << endl;
-    x = state3D->values(0);
-    y = state3D->values(1);
-    z = state3D->values(2);
+    // extract the first component of the state and cast it to what we expect
+    // const ob::RealVectorStateSpace::StateType *pos = state3D->as<ob::RealVectorStateSpace::StateType>(0);
 
-    return _RRTstar_preparatory->isObsFree(x, y, z);
+    // extract the second component of the state and cast it to what we expect
+    // const const ob::RealVectorStateSpace::StateType *rot = state3D->as<ob::RealVectorStateSpace::StateType>(1);
+
+    // check validity of state defined by pos & rot
+
+    // return a value that is always true but uses the two variables we define, so we avoid compiler warnings
+    // return (const void*)rot != (const void*)pos;
+
+    return true;
   }
 };
 
@@ -180,6 +186,7 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
   // Construct a space information instance for this state space
   ob::SpaceInformationPtr si(new ob::SpaceInformation(space));
+  // std::make_shared<ob::SpaceInformation>(space)
   // Set the object used to check which states in the space are valid
   si->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si)));
   si->setup();
@@ -193,6 +200,7 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   *
   *
   */
+  start.random();
 
   // Set our robot's goal state
   ob::ScopedState<> goal(space);
@@ -203,6 +211,7 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   *
   *
   */
+  goal.random();
 
   // Create a problem instance
 
@@ -214,6 +223,7 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   *
   *
   */
+  auto pdef(std::make_shared<ob::ProblemDefinition>(si));
 
   // Set the start and goal states
   pdef->setStartAndGoalStates(start, goal);
@@ -227,6 +237,8 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   *
   *
   */
+  // set the start and goal states
+  pdef->setStartAndGoalStates(start, goal);
 
   // Construct our optimizing planner using the RRTstar algorithm.
   /**
@@ -237,6 +249,8 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   *
   *
   */
+  // create a planner for the defined space
+  auto optimizingPlanner(std::make_shared<og::RRTstar>(si));
 
   // Set the problem instance for our planner to solve
   optimizingPlanner->setProblemDefinition(pdef);
@@ -244,15 +258,20 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
 
   // attempt to solve the planning problem within one second of
   // planning time
-  ob::PlannerStatus solved = optimizingPlanner->solve(1.0);
+  ob::PlannerStatus solved = optimizingPlanner->ob::Planner::solve(1.0);
 
   if (solved)
   {
+     
     // get the goal representation from the problem definition (not the same as the goal state)
     // and inquire about the found path
     og::PathGeometric* path = pdef->getSolutionPath()->as<og::PathGeometric>();
+std::cout << "Found solution:" << std::endl;
 
     vector<Vector3d> path_points;
+    
+ // print the path to screen
+         path->print(std::cout);
 
     for (size_t path_idx = 0; path_idx < path->getStateCount(); path_idx++)
     {
