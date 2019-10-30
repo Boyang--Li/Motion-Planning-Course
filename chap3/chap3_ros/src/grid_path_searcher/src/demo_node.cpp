@@ -130,6 +130,8 @@ public:
     // example, so we downcast state into the specific type.
     //  const auto *se3state = state->as<ob::SE3StateSpace::StateType>();
     const ob::RealVectorStateSpace::StateType* state3D = state->as<ob::RealVectorStateSpace::StateType>();
+    // cout << "state3D is " << *state3D->values << " and " << state3D->operator[](0) << endl;
+
     /**
     *
     *
@@ -137,18 +139,12 @@ public:
     *
     *
     */
-    // extract the first component of the state and cast it to what we expect
-    // const ob::RealVectorStateSpace::StateType *pos = state3D->as<ob::RealVectorStateSpace::StateType>(0);
+    // Vector3d pos(state3D->operator[](0), state3D->operator[](1), state3D->operator[](2));
 
-    // extract the second component of the state and cast it to what we expect
-    // const const ob::RealVectorStateSpace::StateType *rot = state3D->as<ob::RealVectorStateSpace::StateType>(1);
+    // (pos(1) >= -_x_size * 0.5 && pos(1) < _x_size * 0.5 && pos(2) >= -_y_size * 0.5 && pos(2) < _y_size * 0.5 &&
+    //  pos(3) >= -_z_size * 0.5 && pos(3) < _z_size * 0.5 && (data[idx_x * GLYZ_SIZE + idx_y * GLZ_SIZE + idx_z] < 1))
 
-    // check validity of state defined by pos & rot
-
-    // return a value that is always true but uses the two variables we define, so we avoid compiler warnings
-    // return (const void*)rot != (const void*)pos;
-
-    return true;
+    return _RRTstar_preparatory->isObsFree(state3D->operator[](0), state3D->operator[](1), state3D->operator[](2));
   }
 };
 
@@ -194,34 +190,24 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
   // Set our robot's starting state
   ob::ScopedState<> start(space);
   /**
-  *
-  *
   STEP 2: Finish the initialization of start state
-  *
-  *
   */
-  start.random();
-
+  start[0] = start_pt(0);
+  start[1] = start_pt(1);
+  start[2] = start_pt(2);
   // Set our robot's goal state
   ob::ScopedState<> goal(space);
   /**
-  *
-  *
   STEP 3: Finish the initialization of goal state
-  *
-  *
   */
-  goal.random();
-
+  goal[0] = target_pt(0);
+  goal[1] = target_pt(1);
+  goal[2] = target_pt(2);
   // Create a problem instance
 
   /**
-  *
-  *
   STEP 4: Create a problem instance,
   please define variable as pdef
-  *
-  *
   */
   auto pdef(std::make_shared<ob::ProblemDefinition>(si));
 
@@ -230,24 +216,16 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
 
   // Set the optimization objective
   /**
-  *
-  *
-  STEP 5: Set the optimization objective, the options you can choose are defined earlier:
+ STEP 5: Set the optimization objective, the options you can choose are defined earlier:
   getPathLengthObjective() and getThresholdPathLengthObj()
-  *
-  *
   */
   // set the start and goal states
   pdef->setStartAndGoalStates(start, goal);
 
   // Construct our optimizing planner using the RRTstar algorithm.
   /**
-  *
-  *
   STEP 6: Construct our optimizing planner using the RRTstar algorithm,
   please define varible as optimizingPlanner
-  *
-  *
   */
   // create a planner for the defined space
   auto optimizingPlanner(std::make_shared<og::RRTstar>(si));
@@ -262,28 +240,29 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
 
   if (solved)
   {
-     
     // get the goal representation from the problem definition (not the same as the goal state)
     // and inquire about the found path
     og::PathGeometric* path = pdef->getSolutionPath()->as<og::PathGeometric>();
-std::cout << "Found solution:" << std::endl;
+    std::cout << "Found solution:" << std::endl;
 
     vector<Vector3d> path_points;
-    
- // print the path to screen
-         path->print(std::cout);
+
+    // print the path to screen
+    path->print(std::cout);
 
     for (size_t path_idx = 0; path_idx < path->getStateCount(); path_idx++)
     {
       const ob::RealVectorStateSpace::StateType* state =
           path->getState(path_idx)->as<ob::RealVectorStateSpace::StateType>();
       /**
-      *
-      *
-      STEP 7: Trandform the found path from path to path_points for rviz display
-      *
-      *
-      */
+         STEP 7: Trandform the found path from path to path_points for rviz display
+         */
+
+      // cout << "Num " << path_idx << " is " << *state->values << " and " << state->operator[](1) << endl;
+
+      Vector3d waypoint(state->operator[](0), state->operator[](1), state->operator[](2));
+
+      path_points.push_back(waypoint);
     }
     visRRTstarPath(path_points);
   }
