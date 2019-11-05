@@ -1,0 +1,1 @@
+solution = root(z^4 - 12*vx0^2*z^2 - z*(72*px0*vx0 - 72*px_F*vx0) + 216*px0*px_F - 108*px_F^2 - 108*px0^2, z, 1)
