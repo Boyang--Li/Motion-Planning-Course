@@ -1,3 +1,4 @@
+% generate minimum snap trajectory based on the closed form solution
 clc;clear;close all;
 path = ginput() * 100.0;
 

@@ -274,6 +274,8 @@ VectorXd timeAllocation( MatrixXd Path)
     VectorXd time(Path.rows() - 1);
     
     /*
+    For this : use Eigen, generate minimum snap trajectory based on the closed form solution
+    Self build this later: use the OOQP solver, write down a minimum snap trajectory generator
 
     STEP 1: Learn the "trapezoidal velocity" of "TIme Allocation" in L5, then finish this timeAllocation function
 
