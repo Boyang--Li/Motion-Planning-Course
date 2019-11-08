@@ -41,8 +41,8 @@ for i=0:n_seg-1
     Pxi = [];
     Pyi = [];
     for t=0:tstep:ts(i+1)
-        X_n(k)  = polyval(Pxi,t);
-        Y_n(k)  = polyval(Pyi,t);
+        X_n(k)  = polyval(flip(poly_coef_x(i*n_poly_perseg+1:(i+1)*n_poly_perseg)), t);
+        Y_n(k)  = polyval(flip(poly_coef_y(i*n_poly_perseg+1:(i+1)*n_poly_perseg)), t);
         k = k+1;
     end
 end
@@ -60,6 +60,9 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     %#####################################################
     % STEP 1: compute M
     M = getM(n_seg, n_order, ts);
+    
+    
+    
     %#####################################################
     % STEP 2: compute Ct
     Ct = getCt(n_seg, n_order);
@@ -68,6 +71,8 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     R_cell = mat2cell(R, [n_seg+7 3*(n_seg-1)], [n_seg+7 3*(n_seg-1)]);
     R_pp = R_cell{2, 2};
     R_fp = R_cell{1, 2};
+    
+    
     %#####################################################
     % STEP 3: compute dF
     dF = [];
