@@ -1,7 +1,9 @@
 %use the ‘quadprog’ QP solver, write down a minimum snap trajectory generator
 
 clc;clear;close all;
-path = ginput() * 100.0;
+% path = ginput() * 100.0;
+path = [10,20;20,40;40,80;80,100];
+% path = [10,20;40,80;20,40];
 
 n_order       = 7; % order of poly
 n_seg         = size(path,1)-1; % segment number
@@ -9,25 +11,25 @@ n_poly_perseg = (n_order+1); % coef number of perseg
 
 ts = zeros(n_seg, 1);
 % calculate time distribution in proportion to distance between 2 points
-dist     = zeros(n_seg, 1);
-dist_sum = 0;
-T        = 25;
-t_sum    = 0;
+% dist     = zeros(n_seg, 1);
+% dist_sum = 0;
+% T        = 25;
+% t_sum    = 0;
 
-for i = 1:n_seg
-    dist(i) = sqrt((path(i+1, 1)-path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
-    dist_sum = dist_sum+dist(i);
-end
-for i = 1:n_seg-1
-    ts(i) = dist(i)/dist_sum*T;
-    t_sum = t_sum+ts(i);
-end
-ts(n_seg) = T - t_sum;
+% for i = 1:n_seg
+%     dist(i) = sqrt((path(i+1, 1)-path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
+%     dist_sum = dist_sum+dist(i);
+% end
+% for i = 1:n_seg-1
+%     ts(i) = dist(i)/dist_sum*T;
+%     t_sum = t_sum+ts(i);
+% end
+% ts(n_seg) = T - t_sum;
 
 % or you can simply set all time distribution as 1
-% for i = 1:n_seg
-%     ts(i) = 1.0;
-% end
+for i = 1:n_seg
+    ts(i) = 1.0;
+end
 
 poly_coef_x = MinimumSnapQPSolver(path(:, 1), ts, n_seg, n_order);
 poly_coef_y = MinimumSnapQPSolver(path(:, 2), ts, n_seg, n_order);

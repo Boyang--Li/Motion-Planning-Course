@@ -1,6 +1,8 @@
 % generate minimum snap trajectory based on the closed form solution
 clc;clear;close all;
-path = ginput() * 100.0;
+% path = ginput() * 100.0;
+path = [10,20;20,40;40,80;80,100];
+% path = [10,20;40,80;20,40];
 
 n_order = 7;
 n_seg = size(path, 1) - 1;
@@ -8,24 +10,24 @@ n_poly_perseg = n_order + 1;
 
 ts = zeros(n_seg, 1);
 % calculate time distribution based on distance between 2 points
-dist = zeros(n_seg, 1);
-dist_sum = 0;
-T = 25;
-
-t_sum = 0;
-for i = 1:n_seg
-    dist(i) = sqrt((path(i+1, 1) - path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
-    dist_sum = dist_sum + dist(i);
-end
-for i = 1:n_seg-1
-    ts(i) = dist(i) / dist_sum * T;
-    t_sum = t_sum + ts(i);
-end
-ts(n_seg) = T - t_sum;
-% or you can simply average the time
+% dist = zeros(n_seg, 1);
+% dist_sum = 0;
+% T = 25;
+% 
+% t_sum = 0;
 % for i = 1:n_seg
-%     ts(i) = 1.0;
+%     dist(i) = sqrt((path(i+1, 1) - path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
+%     dist_sum = dist_sum + dist(i);
 % end
+% for i = 1:n_seg-1
+%     ts(i) = dist(i) / dist_sum * T;
+%     t_sum = t_sum + ts(i);
+% end
+% ts(n_seg) = T - t_sum;
+% or you can simply average the time
+for i = 1:n_seg
+    ts(i) = 1.0;
+end
 
 poly_coef_x = MinimumSnapCloseformSolver(path(:, 1), ts, n_seg, n_order);
 poly_coef_y = MinimumSnapCloseformSolver(path(:, 2), ts, n_seg, n_order);
@@ -38,11 +40,9 @@ for i=0:n_seg-1
     %#####################################################
     % STEP 4: get the coefficients of i-th segment of both x-axis
     % and y-axis
-    Pxi = [];
-    Pyi = [];
     for t=0:tstep:ts(i+1)
-        X_n(k)  = polyval(flip(poly_coef_x(i*n_poly_perseg+1:(i+1)*n_poly_perseg)), t);
-        Y_n(k)  = polyval(flip(poly_coef_y(i*n_poly_perseg+1:(i+1)*n_poly_perseg)), t);
+        X_n(k) = polyval(poly_coef_x(i*n_poly_perseg+1:(i+1)*n_poly_perseg), t);
+        Y_n(k) = polyval(poly_coef_y(i*n_poly_perseg+1:(i+1)*n_poly_perseg), t);
         k = k+1;
     end
 end
@@ -57,30 +57,22 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     %#####################################################
     % you have already finished this function in hw1
     Q = getQ(n_seg, n_order, ts);
+    
     %#####################################################
     % STEP 1: compute M
     M = getM(n_seg, n_order, ts);
     
-    
-    
     %#####################################################
     % STEP 2: compute Ct
     Ct = getCt(n_seg, n_order);
-    C = Ct';
-    R = C * inv(M)' * Q * inv(M) * Ct;
+    R = Ct' * inv(M)' * Q * (M \ Ct);
     R_cell = mat2cell(R, [n_seg+7 3*(n_seg-1)], [n_seg+7 3*(n_seg-1)]);
     R_pp = R_cell{2, 2};
-    R_fp = R_cell{1, 2};
-    
+    R_fp = R_cell{1, 2}; 
     
     %#####################################################
     % STEP 3: compute dF
-    dF = [];
-    %
-    %
-    %
-    %
-
-    dP = -inv(R_pp) * R_fp' * dF;
-    poly_coef = inv(M) * Ct * [dF;dP];
+    dF = [start_cond'; waypoints(2:end-1); end_cond'];
+    dP = -R_pp \ R_fp' * dF;
+    poly_coef = M \ Ct * [dF;dP];
 end
