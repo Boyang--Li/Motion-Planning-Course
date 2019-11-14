@@ -1,8 +1,8 @@
 %use the ‘quadprog’ QP solver, write down a minimum snap trajectory generator
 
 clc;clear;close all;
-% path = ginput() * 100.0;
-path = [10,20;20,40;40,80;80,100];
+path = ginput() * 100.0;
+% path = [0,0;20,40;40,80;];
 % path = [10,20;40,80;20,40];
 
 n_order       = 7; % order of poly

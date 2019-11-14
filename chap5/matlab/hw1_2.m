@@ -1,7 +1,7 @@
 % generate minimum snap trajectory based on the closed form solution
 clc;clear;close all;
-% path = ginput() * 100.0;
-path = [10,20;20,40;40,80;80,100];
+path = ginput() * 100.0;
+% path = [0,0;20,40;40,80;];
 % path = [10,20;40,80;20,40];
 
 n_order = 7;
@@ -65,7 +65,8 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     %#####################################################
     % STEP 2: compute Ct
     Ct = getCt(n_seg, n_order);
-    R = Ct' * inv(M)' * Q * (M \ Ct);
+    C = Ct';
+    R = C * inv(M)' * Q * (M \ Ct);
     R_cell = mat2cell(R, [n_seg+7 3*(n_seg-1)], [n_seg+7 3*(n_seg-1)]);
     R_pp = R_cell{2, 2};
     R_fp = R_cell{1, 2}; 
@@ -74,5 +75,5 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     % STEP 3: compute dF
     dF = [start_cond'; waypoints(2:end-1); end_cond'];
     dP = -R_pp \ R_fp' * dF;
-    poly_coef = M \ Ct * [dF;dP];
+    poly_coef = M \ (Ct * [dF;dP]);
 end
