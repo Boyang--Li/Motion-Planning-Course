@@ -1,8 +1,7 @@
 % generate minimum snap trajectory based on the closed form solution
 clc;clear;close all;
 path = ginput() * 100.0;
-% path = [0,0;20,40;40,80;];
-% path = [10,20;40,80;20,40];
+% path = [10,20;15,25;35,55;56,87;89,56];
 
 n_order = 7;
 n_seg = size(path, 1) - 1;
@@ -10,24 +9,24 @@ n_poly_perseg = n_order + 1;
 
 ts = zeros(n_seg, 1);
 % calculate time distribution based on distance between 2 points
-% dist = zeros(n_seg, 1);
-% dist_sum = 0;
-% T = 25;
-% 
-% t_sum = 0;
-% for i = 1:n_seg
-%     dist(i) = sqrt((path(i+1, 1) - path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
-%     dist_sum = dist_sum + dist(i);
-% end
-% for i = 1:n_seg-1
-%     ts(i) = dist(i) / dist_sum * T;
-%     t_sum = t_sum + ts(i);
-% end
-% ts(n_seg) = T - t_sum;
-% or you can simply average the time
+dist = zeros(n_seg, 1);
+dist_sum = 0;
+T = 25;
+
+t_sum = 0;
 for i = 1:n_seg
-    ts(i) = 1.0;
+    dist(i) = sqrt((path(i+1, 1) - path(i, 1))^2 + (path(i+1, 2) - path(i, 2))^2);
+    dist_sum = dist_sum + dist(i);
 end
+for i = 1:n_seg-1
+    ts(i) = dist(i) / dist_sum * T;
+    t_sum = t_sum + ts(i);
+end
+ts(n_seg) = T - t_sum;
+% or you can simply average the time
+% for i = 1:n_seg
+%     ts(i) = 1.0;
+% end
 
 poly_coef_x = MinimumSnapCloseformSolver(path(:, 1), ts, n_seg, n_order);
 poly_coef_y = MinimumSnapCloseformSolver(path(:, 2), ts, n_seg, n_order);
@@ -56,7 +55,7 @@ function poly_coef = MinimumSnapCloseformSolver(waypoints, ts, n_seg, n_order)
     end_cond =   [waypoints(end), 0, 0, 0];
     %#####################################################
     % you have already finished this function in hw1
-    Q = getQ(n_seg, n_order, ts);
+    Q = getQ2(n_seg, n_order, ts);
     
     %#####################################################
     % STEP 1: compute M

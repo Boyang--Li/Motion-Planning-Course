@@ -2,8 +2,7 @@
 
 clc;clear;close all;
 path = ginput() * 100.0;
-% path = [0,0;20,40;40,80;];
-% path = [10,20;40,80;20,40];
+% path = [10,20;15,25;35,55;56,87;89,56];
 
 n_order       = 7; % order of poly
 n_seg         = size(path,1)-1; % segment number

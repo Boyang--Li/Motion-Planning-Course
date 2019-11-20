@@ -7,11 +7,13 @@ function Ct = getCt(n_seg, n_order)
     Ck = diag(A);
     
     C_element1 = [1;0;0;0;1;0;0;0];
+    Ci1 = [];
     for i = 1:(n_seg-1)
         Ci1 = blkdiag(Ci1,C_element1);
     end
     
     A2 = [1;1;1];
+    Ci2 = [];
     C_element2 = [[0,0,0];diag(A2);[0,0,0];diag(A2)];
     for i = 1:(n_seg-1)
         Ci2 = blkdiag(Ci2,C_element2);

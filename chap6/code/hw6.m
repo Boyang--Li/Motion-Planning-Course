@@ -76,7 +76,7 @@ function poly_coef = MinimumSnapCorridorBezierSolver(axis, waypoints, corridor, 
     % you can define corridor_range as [p1_min, p1_max;
     %                                   p2_min, p2_max;
     %                                   ...,
-    %                                   pn_min, pn_max ];
+    %                                   pn_min, pn_max];
     corridor_range = [];
     
     % STEP 3.2: get Aieq and bieq
