@@ -3,23 +3,22 @@ v_max = 400;
 a_max = 400;
 color = ['r', 'b', 'm', 'g', 'k', 'c', 'c'];
 
-%% specify the center points of the flight corridor and the region of corridor
+%% Use the matlab robotics toolbox to generate B-spine path
+cpts = [50 100 180 250 280; 50 120 150 80 0];
+tpts = [0 5];
+tvec = 0:0.01:5;
+[q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
+
+%% Use standard constrained qp method
+% specify the center points of the flight corridor and the region of corridor
 path = [50, 50;
     100, 120;
     180, 150;
     250, 80;
     280, 0];
 
-%%%%%%%%%%%%%%%%
-cpts = [50 100 180 250 280; 50 120 150 80 0];
-tpts = [0 5];
-
-tvec = 0:0.01:5;
-[q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
-%%%%%%%%%%%%%%%%
-
-x_length = 90;
-y_length = 90;
+x_length = 100;
+y_length = 100;
 
 n_order = 7;   % 8 control points
 n_seg = size(path, 1);
@@ -56,7 +55,8 @@ for i = 1:n_seg
     hold on;
 end
 hold on;
-x_pos = [];y_pos = [];
+x_pos = [];
+y_pos = [];
 idx = 1;
 
 %% #####################################################
