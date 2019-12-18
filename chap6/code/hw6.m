@@ -4,10 +4,10 @@ a_max = 400;
 color = ['r', 'b', 'm', 'g', 'k', 'c', 'c'];
 
 %% Use the matlab robotics toolbox to generate B-spine path
-cpts = [50 100 180 250 280; 50 120 150 80 0];
-tpts = [0 5];
-tvec = 0:0.01:5;
-[q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
+% cpts = [50 100 180 250 280; 50 120 150 80 0];
+% tpts = [0 5];
+% tvec = 0:0.01:5;
+% [q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
 
 %% Use standard constrained qp method
 % specify the center points of the flight corridor and the region of corridor
@@ -74,9 +74,9 @@ for k = 1:n_seg
     end
 end
 % scatter(q(1,:),q(2,:));
-f2 = plot(q(1,:),q(2,:),'DisplayName','matlab function');
-f3 = plot(qd(1,:),qd(2,:),'DisplayName','qp solver');
-legend([f1,f2,f3]);
+% f2 = plot(q(1,:),q(2,:),'DisplayName','matlab function');
+% f3 = plot(qd(1,:),qd(2,:),'DisplayName','qp solver');
+% legend([f1,f2,f3]);
 
 function poly_coef = MinimumSnapCorridorBezierSolver(axis, waypoints, corridor, ts, n_seg, n_order, v_max, a_max)
 start_cond = [waypoints(1), 0, 0];
@@ -110,8 +110,8 @@ end
 [Aieq, bieq] = getAbieq(n_seg, n_order, corridor_range, ts, v_max, a_max);
 
 f = zeros(size(Q_0,1),1);
-% poly_coef = quadprog(Q_0,f,Aieq, bieq, Aeq, beq);
-poly_coef = [];
+poly_coef = quadprog(Q_0,f,Aieq, bieq, Aeq, beq);
+% poly_coef = [];
 end
 
 function plot_rect(center, x_r, y_r)
