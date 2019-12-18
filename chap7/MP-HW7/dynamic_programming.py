@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 seed = np.random.seed(1234)
 graph = {}
 
-
-
 def build_up_graph(grid, save_path):
     max_vel = 5
 
@@ -40,8 +38,6 @@ def build_up_graph(grid, save_path):
     output = open(save_path, 'wb')
     pickle.dump(graph, output)
 
-
-
 def check_graph(grid):
     plt.figure(figsize=(4.5, 16))
     plt.pcolor(grid, edgecolors='k', linewidths=1)
@@ -64,7 +60,6 @@ def check_graph(grid):
     # end for
     plt.show()
 
-
 def track_the_best_plan(idx = 0):
     start_node = Node(START_LINE[idx][0], START_LINE[idx][1], 0, 0)
     start_key = start_node.key
@@ -83,8 +78,6 @@ def track_the_best_plan(idx = 0):
         print(state.px, state.py)
     return trajectory
 
-
-
 def visualize_the_best_plan(plan, grid_para):
     assert isinstance(plan, list)
     plt.figure(figsize=(4.5, 16))
@@ -96,8 +89,6 @@ def visualize_the_best_plan(plan, grid_para):
                   plan[i+1].py - plan[i].py, plan[i+1].px - plan[i].px,
                   color='r', head_width=0.3, head_length=0.1)
     plt.show()
-
-
 
 def dynamic_programming():
     itr_num = 0
@@ -132,8 +123,6 @@ def dynamic_programming():
     x_axis = range(len(bellman_error_list))
     plt.plot(x_axis, bellman_error_list)
     plt.show()
-
-
 
 if __name__ == '__main__':
     path = './solution/graph_dp.dat'

@@ -1,6 +1,5 @@
 from racetracks import *
 
-
 class Node:
     def __init__(self, px, py, vx, vy):
         # state
@@ -21,16 +20,13 @@ class Node:
     def generate_key(px, py, vx, vy):
         return "%02d" % px + "%02d" % py + "%02d" % vx + "%02d" % vy
 
-
     def get_key(self):
         return self.generate_key(self.px, self.py, self.vx, self.vy)
-
 
     def connect_to_graph(self, grid):
         for u in ACTION_SPACE:
             self.next_prob_9.append(self.control(u[0], u[1], grid, success=True))
             self.next_prob_1.append(self.control(u[0], u[1], grid, success=False))
-
 
     @staticmethod
     def velocity_constraints(vx, vy):
@@ -65,7 +61,6 @@ class Node:
             return FREE, way_points[-1]
     # end definition
 
-
     def control(self, ux, uy, grid, success):
         assert ux in action_assert_list
         assert uy in action_assert_list
@@ -98,3 +93,4 @@ class Node:
             assert status == OUTBOUND or status == OCCUPIED
             rand_start = START_LINE[np.random.randint(low=0, high=3, size=1)[0]]
             return self.generate_key(rand_start[0], rand_start[1], 0, 0)
+            

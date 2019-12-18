@@ -2,7 +2,7 @@ function [Aieq, bieq] = getAbieq(n_seg, n_order, corridor_range, ts, v_max, a_ma
 n_all_poly = n_seg*(n_order+1);
 n_coef = n_order+1;
 
-% [b_start, db_start, ddb_start] = calc_bpolyvec(0,n_order);
+[b_start, db_start, ddb_start] = calc_bpolyvec(0,n_order);
 [b_end, db_end, ddb_end] = calc_bpolyvec(1,n_order);
 %#####################################################
 % STEP 3.2.1 p constraint

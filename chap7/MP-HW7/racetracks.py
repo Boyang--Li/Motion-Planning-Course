@@ -1,8 +1,10 @@
-import numpy as np
+# Problem definition
 
+import numpy as np
 
 START_LINE = [[0, 3], [0, 4], [0, 5], [0, 6]]
 FINISH_LINE = [[34, 11], [33, 11], [32, 11]]
+# acc
 ACTION_SPACE = [[1, 1], [0, 1], [1, 0], [0, 0], [-1, 0], [0, -1], [1, -1], [-1, 1], [-1, -1]]
 action_assert_list = [-1, 0, 1]
 FINISH = 3

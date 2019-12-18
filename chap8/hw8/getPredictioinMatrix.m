@@ -15,7 +15,7 @@ end
 
 for i=1:K
     for j=1:i
-        Tp(i,j) = ((i-j+1)*(i-j)/2+1/6)*dt^3;
+        Tp(i,j) = ((i-j+1)*(i-j)/2 + 1/6) * dt^3;
     end
 end
 

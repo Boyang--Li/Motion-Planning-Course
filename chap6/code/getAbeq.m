@@ -1,22 +1,20 @@
 function [Aeq, beq] = getAbeq(n_seg, n_order, ts, start_cond, end_cond)
 n_all_poly = n_seg*(n_order+1);
 n_coef = n_order + 1;
+
 [b_start, db_start, ddb_start] = calc_bpolyvec(0,n_order);
 [b_end, db_end, ddb_end] = calc_bpolyvec(1,n_order);
+
 %#####################################################
 % STEP 2.1 p,v,a constraint in start
 Aeq_start = zeros(3, n_all_poly);
-beq_start = zeros(3, 1);
 Aeq_start(:,1:n_coef) = [b_start; db_start; ddb_start];
-% Aeq_start = double (Aeq_start);
 beq_start = start_cond';
 
 %#####################################################
 % STEP 2.2 p,v,a constraint in end
 Aeq_end = zeros(3, n_all_poly);
-beq_end = zeros(3, 1);
 Aeq_end(:,1:n_coef) = [b_end; db_end; ddb_end];
-% Aeq_end = double (Aeq_end);
 beq_end = end_cond';
 
 %#####################################################
