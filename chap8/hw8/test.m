@@ -1,3 +1,7 @@
+% single axis mpc regulator
+clear
+
+% initial condition
 p_0 = 10;
 v_0 = 0;
 a_0 = 0;
@@ -10,7 +14,7 @@ w3 = 1;
 w4 = 1;
 w5 = 100;
 
-for t=0.2:0.2:10
+for t=dt:dt:10
     % Construct the prediction matrix
     [Tp, Tv, Ta, Bp, Bv, Ba] = getPredictioinMatrix(K,dt,p_0,v_0,a_0);
 
