@@ -125,7 +125,7 @@ def dynamic_programming():
     plt.show()
 
 if __name__ == '__main__':
-    path = './solution/graph_dp.dat'
+    path = './solution/graph_mydp.dat'
     track_map = race_track
     build_up_graph(track_map, path)
     graph = pickle.load(open(path, 'rb'))

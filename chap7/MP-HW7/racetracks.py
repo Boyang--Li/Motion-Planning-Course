@@ -4,9 +4,12 @@ import numpy as np
 
 START_LINE = [[0, 3], [0, 4], [0, 5], [0, 6]]
 FINISH_LINE = [[34, 11], [33, 11], [32, 11]]
+# FINISH_LINE = [ [32, 11]]
 # acc
 ACTION_SPACE = [[1, 1], [0, 1], [1, 0], [0, 0], [-1, 0], [0, -1], [1, -1], [-1, 1], [-1, -1]]
+# ACTION_SPACE = [[0, 1], [1, 0], [0, 0], [-1, 0], [0, -1]]
 action_assert_list = [-1, 0, 1]
+# action_assert_list = [-1, 0,1,2,3]
 FINISH = 3
 START = 2
 FREE = 0
