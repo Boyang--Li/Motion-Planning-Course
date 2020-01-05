@@ -1,13 +1,16 @@
-clc;clear;close all
+clc
+clear
+close all
 v_max = 400;
 a_max = 400;
-color = ['r', 'b', 'm', 'g', 'k', 'c', 'c'];
+j_max = 400;
+color = ['r', 'b', 'm', 'g', 'k', 'c'];
 
 %% Use the matlab robotics toolbox to generate B-spine path
-% cpts = [50 100 180 250 280; 50 120 150 80 0];
-% tpts = [0 5];
-% tvec = 0:0.01:5;
-% [q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
+cpts = [50 100 180 250 280; 50 120 150 80 0];
+tpts = [0 5];
+tvec = 0:0.01:5;
+[q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
 
 %% Use standard constrained qp method
 % specify the center points of the flight corridor and the region of corridor
@@ -28,27 +31,17 @@ for i = 1:n_seg
     corridor(:, i) = [path(i, 1), path(i, 2), x_length/2, y_length/2]';
 end
 
-corridorX = zeros(2, n_seg);
-for i = 1:n_seg
-    corridorX(:, i) = [path(i, 1), x_length/2]';
-end
-
-corridorY = zeros(2, n_seg);
-for i = 1:n_seg
-    corridorY(:, i) = [path(i, 2), y_length/2]';
-end
-
 %% specify ts for each segment
 ts = zeros(n_seg, 1);
 for i = 1:n_seg
     ts(i,1) = 1;
 end
 
-poly_coef_x = MinimumSnapCorridorBezierSolver(1, path(:, 1), corridorX, ts, n_seg, n_order, v_max, a_max);
-poly_coef_y = MinimumSnapCorridorBezierSolver(2, path(:, 2), corridorY, ts, n_seg, n_order, v_max, a_max);
+poly_coef_x = MinimumSnapCorridorBezierSolver(1, path(:, 1), corridor, ts, n_seg, n_order, v_max, a_max, j_max);
+poly_coef_y = MinimumSnapCorridorBezierSolver(2, path(:, 2), corridor, ts, n_seg, n_order, v_max, a_max, j_max);
 
 %% display the trajectory and cooridor
-f1 = plot(path(:,1), path(:,2), '*r','DisplayName','waypoints'); 
+f1 = plot(path(:,1), path(:,2), '*r','DisplayName','waypoints');
 hold on;
 for i = 1:n_seg
     plot_rect([corridor(1,i);corridor(2,i)], corridor(3, i), corridor(4,i));
@@ -66,21 +59,23 @@ for k = 1:n_seg
         x_pos(idx) = 0.0;
         y_pos(idx) = 0.0;
         for i = 0:n_order
-%             basis_p = nchoosek(n_order, i) * t^i * (1-t)^(n_order-i);
-            %             x_pos(idx) =
-            %             y_pos(idx) =
+            basis_p = nchoosek(n_order, i) * t^i * (1-t)^(n_order-i);
+            x_pos(idx) = x_pos(idx) + poly_coef_x((k-1)*(n_order+1)+i+1) * basis_p * t;
+            y_pos(idx) = y_pos(idx) + poly_coef_y((k-1)*(n_order+1)+i+1) * basis_p * t;
         end
         idx = idx + 1;
     end
 end
-% scatter(q(1,:),q(2,:));
+scatter(q(1,:),q(2,:));
+f3 = plot(x_pos,y_pos);
+%     f3.Color = color(k);
 % f2 = plot(q(1,:),q(2,:),'DisplayName','matlab function');
-% f3 = plot(qd(1,:),qd(2,:),'DisplayName','qp solver');
+% f3 = plot(x_pos,y_pos,'DisplayName','qp solver');
 % legend([f1,f2,f3]);
 
-function poly_coef = MinimumSnapCorridorBezierSolver(axis, waypoints, corridor, ts, n_seg, n_order, v_max, a_max)
-start_cond = [waypoints(1), 0, 0];
-end_cond   = [waypoints(end), 0, 0];
+function poly_coef = MinimumSnapCorridorBezierSolver(axis, waypoints, corridor, ts, n_seg, n_order, v_max, a_max, j_max)
+start_cond = [waypoints(1), 0, 0, 0];
+end_cond   = [waypoints(end), 0, 0, 0];
 
 %% #####################################################
 % STEP 1: compute Q_0 of c'Q_0c
@@ -100,18 +95,25 @@ Q_0 = nearestSPD(Q_0);
 %                                   p2_min, p2_max;
 %                                   ...,
 %                                   pn_min, pn_max];
-corridor_range = zeros(size(corridor,2),2);
-for i = 1:size(corridor,2)
-    corridor_range(i,1) = corridor(1,i) - corridor(2,i);
-    corridor_range(i,2) = corridor(1,i) + corridor(2,i);
+% corridor_range = zeros(size(corridor,2),2);
+% for i = 1:size(corridor,2)
+%     corridor_range(i,1) = corridor(1,i) - corridor(2,i);
+%     corridor_range(i,2) = corridor(1,i) + corridor(2,i);
+% end
+d_order = 4;
+constraint_range = zeros(n_seg, 2*d_order);
+for j=0:n_seg-1
+    constraint_range(j+1,:)=[corridor(axis,j+1)+corridor(2+axis,j+1),...
+        -(corridor(axis,j+1)-corridor(2+axis,j+1)),...
+        v_max,v_max,a_max,a_max,j_max,j_max];
 end
-
 % STEP 3.2: get Aieq and bieq
-[Aieq, bieq] = getAbieq(n_seg, n_order, corridor_range, ts, v_max, a_max);
+[Aieq, bieq] = getAbieq(n_seg, d_order, constraint_range,ts);
 
 f = zeros(size(Q_0,1),1);
-poly_coef = quadprog(Q_0,f,Aieq, bieq, Aeq, beq);
-% poly_coef = [];
+% poly_coef = quadprog(Q_0,f,Aieq, bieq, Aeq, beq);
+poly_coef = quadprog(Q_0,f,[], [], Aeq, beq);
+
 end
 
 function plot_rect(center, x_r, y_r)

@@ -1,47 +1,47 @@
 function [Aeq, beq] = getAbeq(n_seg, n_order, ts, start_cond, end_cond)
 n_all_poly = n_seg*(n_order+1);
-n_coef = n_order + 1;
-
-[b_start, db_start, ddb_start] = calc_bpolyvec(0,n_order);
-[b_end, db_end, ddb_end] = calc_bpolyvec(1,n_order);
+d_order = 4;
 
 %#####################################################
 % STEP 2.1 p,v,a constraint in start
-Aeq_start = zeros(3, n_all_poly);
-Aeq_start(:,1:n_coef) = [b_start; db_start; ddb_start];
+Aeq_start = zeros(d_order, n_all_poly);
+for k = 0:d_order-1
+    Aeq_start(k+1,1:k+1) = ...
+        factorial(n_order)/factorial(n_order-k)*...
+        YHTrangle(k+1)*ts(1)^(1-k);
+end
 beq_start = start_cond';
 
 %#####################################################
 % STEP 2.2 p,v,a constraint in end
-Aeq_end = zeros(3, n_all_poly);
-Aeq_end(:,1:n_coef) = [b_end; db_end; ddb_end];
+Aeq_end = zeros(d_order, n_all_poly);
+for k=0:d_order-1
+    Aeq_end(k+1,n_all_poly-k:n_all_poly) =...
+        factorial(n_order)/factorial(n_order-k)*...
+        YHTrangle(k+1)*ts(1)^(1-k);
+end
 beq_end = end_cond';
 
 %#####################################################
-% STEP 2.3 position continuity constrain between 2 segments
-Aeq_con_p = zeros(n_seg-1, n_all_poly);
-beq_con_p = zeros(n_seg-1, 1);
+% STEP 2.3 p v a continuity constrain between 2 segments
+Aeq_con = zeros((n_seg-1)*d_order, n_all_poly);
+beq_con = zeros((n_seg-1)*d_order, 1);
 
-%#####################################################
-% STEP 2.4 velocity continuity constrain between 2 segments
-Aeq_con_v = zeros(n_seg-1, n_all_poly);
-beq_con_v = zeros(n_seg-1, 1);
-
-%#####################################################
-% STEP 2.5 acceleration continuity constrain between 2 segments
-Aeq_con_a = zeros(n_seg-1, n_all_poly);
-beq_con_a = zeros(n_seg-1, 1);
-
-for i=1:n_seg-1
-    Aeq_con_p(i,n_coef*(i-1)+1:n_coef*(i+1))=[b_end,-b_start];
-    Aeq_con_v(i,n_coef*(i-1)+1:n_coef*(i+1))=[db_end,-db_start];
-    Aeq_con_a(i,n_coef*(i-1)+1:n_coef*(i+1))=[ddb_end,-ddb_start];
+for k=0:d_order-1
+    start_idx_1 = k*(n_seg-1);
+    for j=0:n_seg-2
+        start_idx_2 = (n_order+1)*(j+1);
+        Aeq_con(start_idx_1+j+1,start_idx_2-k:start_idx_2)=...
+            factorial(n_order)/factorial(n_order-k)*...
+            YHTrangle(k+1)*ts(j+1)^(1-k);
+        Aeq_con(start_idx_1+j+1,start_idx_2+1:start_idx_2+1+k)=...
+            -factorial(n_order)/factorial(n_order-k)*...
+            YHTrangle(k+1)*ts(j+2)^(1-k);
+    end
 end
 
 %#####################################################
 % combine all components to form Aeq and beq
-Aeq_con = [Aeq_con_p; Aeq_con_v; Aeq_con_a];
-beq_con = [beq_con_p; beq_con_v; beq_con_a];
 Aeq = [Aeq_start; Aeq_end; Aeq_con];
 beq = [beq_start; beq_end; beq_con];
 end
