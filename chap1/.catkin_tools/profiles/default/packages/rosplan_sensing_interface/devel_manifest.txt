@@ -1,5 +1,0 @@
-rosplan/rosplan_sensing_interface
-/home/boyang/code/ROSPlan/devel/.private/rosplan_sensing_interface/cmake.lock /home/boyang/code/ROSPlan/devel/./cmake.lock
-/home/boyang/code/ROSPlan/devel/.private/rosplan_sensing_interface/share/rosplan_sensing_interface/cmake/rosplan_sensing_interfaceConfig-version.cmake /home/boyang/code/ROSPlan/devel/share/rosplan_sensing_interface/cmake/rosplan_sensing_interfaceConfig-version.cmake
-/home/boyang/code/ROSPlan/devel/.private/rosplan_sensing_interface/share/rosplan_sensing_interface/cmake/rosplan_sensing_interfaceConfig.cmake /home/boyang/code/ROSPlan/devel/share/rosplan_sensing_interface/cmake/rosplan_sensing_interfaceConfig.cmake
-/home/boyang/code/ROSPlan/devel/.private/rosplan_sensing_interface/lib/pkgconfig/rosplan_sensing_interface.pc /home/boyang/code/ROSPlan/devel/lib/pkgconfig/rosplan_sensing_interface.pc

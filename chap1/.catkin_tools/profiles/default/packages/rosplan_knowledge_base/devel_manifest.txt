@@ -1,6 +1,0 @@
-rosplan/rosplan_knowledge_base
-/home/boyang/code/ROSPlan/devel/.private/rosplan_knowledge_base/cmake.lock /home/boyang/code/ROSPlan/devel/./cmake.lock
-/home/boyang/code/ROSPlan/devel/.private/rosplan_knowledge_base/share/rosplan_knowledge_base/cmake/rosplan_knowledge_baseConfig-version.cmake /home/boyang/code/ROSPlan/devel/share/rosplan_knowledge_base/cmake/rosplan_knowledge_baseConfig-version.cmake
-/home/boyang/code/ROSPlan/devel/.private/rosplan_knowledge_base/share/rosplan_knowledge_base/cmake/rosplan_knowledge_baseConfig.cmake /home/boyang/code/ROSPlan/devel/share/rosplan_knowledge_base/cmake/rosplan_knowledge_baseConfig.cmake
-/home/boyang/code/ROSPlan/devel/.private/rosplan_knowledge_base/lib/pkgconfig/rosplan_knowledge_base.pc /home/boyang/code/ROSPlan/devel/lib/pkgconfig/rosplan_knowledge_base.pc
-/home/boyang/code/ROSPlan/devel/.private/rosplan_knowledge_base/lib/rosplan_knowledge_base/knowledgeBase /home/boyang/code/ROSPlan/devel/lib/rosplan_knowledge_base/knowledgeBase

@@ -2,15 +2,15 @@ clc
 clear
 close all
 v_max = 150;
-a_max = 400;
+a_max = 200;
 j_max = 400;
 color = ['r', 'b', 'm', 'g', 'k', 'c'];
 
 %% Use the matlab robotics toolbox to generate B-spine path
-% cpts = [50 100 180 250 280; 50 120 150 80 0];
-% tpts = [0 5];
-% tvec = 0:0.01:5;
-% [q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
+cpts = [50 100 180 250 280; 50 120 150 80 0];
+tpts = [0 5];
+tvec = 0:0.01:5;
+[q, qd, qdd, pp] = bsplinepolytraj(cpts,tpts,tvec);
 
 %% Use standard constrained qp method
 % specify the center points of the flight corridor and the region of corridor
@@ -19,11 +19,6 @@ path = [50, 50;
     180, 150;
     250, 80;
     280, 0];
-% path = [50, 80;
-%     100, 120;
-%     180, 150;
-%     260, 80;
-%     300, 50];
 
 x_length = 100;
 y_length = 100;
@@ -63,38 +58,10 @@ for k = 1:n_seg
     for t = linspace(0,1)
         x_pos(idx) = 0.0;
         y_pos(idx) = 0.0;
-        x_vel(idx) = 0.0;
-        y_vel(idx) = 0.0;
-        x_acc(idx) = 0.0;
-        y_acc(idx) = 0.0;
-        x_jerk(idx) = 0.0;
-        y_jerk(idx) = 0.0;
         for i = 0:n_order
             basis_p = nchoosek(n_order, i) * t^i * (1-t)^(n_order-i);
             x_pos(idx) = x_pos(idx) + poly_coef_x((k-1)*(n_order+1)+i+1) * basis_p;
             y_pos(idx) = y_pos(idx) + poly_coef_y((k-1)*(n_order+1)+i+1) * basis_p;
-        end
-        for i = 0:n_order-1
-            basis_p = nchoosek(n_order-1, i) * t^i * (1-t)^(n_order-1-i);
-            x_vel(idx) = x_vel(idx) + n_order *...
-                (poly_coef_x((k-1)*(n_order+1)+i+2)-poly_coef_x((k-1)*(n_order+1)+i+1))* basis_p;
-            y_vel(idx) = y_vel(idx) + n_order *...
-                (poly_coef_y((k-1)*(n_order+1)+i+2)-poly_coef_x((k-1)*(n_order+1)+i+1))* basis_p;
-        end
-        for i = 0:n_order-2
-            basis_p = nchoosek(n_order-2, i) * t^i * (1-t)^(n_order-2-i);
-            x_acc(idx) = x_acc(idx) + (n_order-1)*n_order*...
-                (poly_coef_x((k-1)*(n_order+1)+i+3)-...
-                2*poly_coef_x((k-1)*(n_order+1)+i+2)...
-                +poly_coef_x((k-1)*(n_order+1)+i+1));
-            y_acc(idx) = y_acc(idx)+(n_order-1)*n_order*...
-                (poly_coef_y((k-1)*(n_order+1)+i+3)-...
-                2*poly_coef_y((k-1)*(n_order+1)+i+2)+...
-                poly_coef_y((k-1)*(n_order+1)+i+1));
-        end
-        for i = 0:n_order-3
-            x_jerk(idx) =0;
-            y_jerk(idx) =0;
         end
         idx = idx + 1;
     end
@@ -106,16 +73,15 @@ for k=1:n_seg
     scatter(poly_coef_x((k-1)*(n_order+1)+1:k*(n_order+1)),...
         poly_coef_y((k-1)*(n_order+1)+1:k*(n_order+1)),color(k));
 end
-% f2 = plot(q(1,:),q(2,:),'DisplayName','B-splines');
-% legend([f1,f2]);
-% hold off
+f2 = plot(q(1,:),q(2,:),'DisplayName','B-splines');
+legend([f1,f2]);
+hold off
 
 % plot p v a j seperately
 idx = 1;
 figure
-plot(linspace(0,5,500),x_pos,linspace(0,5,500),x_vel,linspace(0,5,500),x_acc);
+plot(linspace(0,5,500),x_pos);
 hold on
-
 
 function poly_coef = MinimumSnapCorridorBezierSolver(axis, waypoints, corridor, ts, n_seg, n_order, v_max, a_max, j_max)
 start_cond = [waypoints(1), 0, 0, 0];

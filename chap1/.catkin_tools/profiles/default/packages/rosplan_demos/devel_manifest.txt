@@ -1,2 +1,0 @@
-rosplan_demos/rosplan_demos
-/home/boyang/code/ROSPlan/devel/.private/rosplan_demos/cmake.lock /home/boyang/code/ROSPlan/devel/./cmake.lock
