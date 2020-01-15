@@ -1,5 +1,4 @@
 # Motion Planning Course
- Motion Planning for Mobile Robots Course
+Homework of Motion Planning for Mobile Robots [Course](https://www.shenlanxueyuan.com/course/188)
 
-Oct. 2019
-@Boyang Li
+Oct-Dec 2019 @Boyang Li
